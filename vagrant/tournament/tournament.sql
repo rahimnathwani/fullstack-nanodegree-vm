@@ -7,3 +7,14 @@
 -- these lines here.
 
 
+DROP DATABASE IF EXISTS tournament;
+CREATE DATABASE tournament;
+\c tournament;
+CREATE TABLE players(
+	id serial PRIMARY KEY,
+	name varchar(100) NOT NULL
+);
+CREATE TABLE matches(
+	winner integer NOT NULL,
+	loser integer NOT NULL
+);
