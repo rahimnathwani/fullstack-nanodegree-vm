@@ -20,6 +20,7 @@ CREATE TABLE players(
 );
 
 -- Create the matches table.  We don't need IDs here, as we don't use the sequence or refer to specific matches
+-- The winner and loser fields relate to the id field in players
 CREATE TABLE matches(
 	winner integer NOT NULL,
 	loser integer NOT NULL
