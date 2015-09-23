@@ -6,6 +6,8 @@ This is made to be run in a VM which includes PostgreSQL, Python, and pyscopg2
 
 In order to run the tests for this application:
 
+0. Make sure you're in the `tournament` folder
+
 1. Start psql:
 
 ```
