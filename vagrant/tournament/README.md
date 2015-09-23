@@ -1,5 +1,23 @@
-==P2 Tournament Results==
+# P2 Tournament Results
 
-In order to run the tests for this application, just run:
+This is made to be run in a VM which includes PostgreSQL, Python, and pyscopg2
 
+## Getting started
+
+In order to run the tests for this application:
+
+1. Start psql:
+
+```
+psql
+```
+2. In psql, import this SQL file to create the database, and then use ctrl-D to exit
+
+```
+\i tournament.sql
+^D
+```
+3. Run the tests
+```
 python tournament_test.py
+```
