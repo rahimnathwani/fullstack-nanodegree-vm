@@ -1,0 +1,9 @@
+<form action="/add" method="post">
+  Item: <input type="text" name="item_name">
+  <br>
+  Category: <select name="category">
+  {% for category in categories %}<option value="{{category.id}}">{{category.name}}</option>{% endfor %}       
+</select>
+  <br>
+  <input type="submit" value="Submit">
+</form>

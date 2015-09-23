@@ -1,0 +1,11 @@
+<!doctype html>
+<title>Catalog</title>
+<h2>Categories</h2>
+{% for category in categories %}
+<li><A HREF="?cat={{category.id}}">{{ category.name|e }}</A></li>
+{% endfor %}
+<h2>Items</h2>
+<a href="/add">Add new item</a>
+{% for item in items %}
+<li><A HREF="?item={{item.id}}">{{ item.title|e }}</A></li>
+{% endfor %}
