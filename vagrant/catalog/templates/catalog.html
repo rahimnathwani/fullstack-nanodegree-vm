@@ -1,11 +1,62 @@
 <!doctype html>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
 <title>Catalog</title>
+{% if not session.username %}
+    <a href="{{ url_for('login') }}">log in</a>
+  {% else %}
+    Logged in as {{username}}. <a href="{{ url_for('logout') }}">log out</a>
+  {% endif %}
+
+<div class="container">
+<div class="row">
+<div class="col-md-4">
 <h2>Categories</h2>
+<div class="list-group">
+<A HREF="/"><button type="button" class="list-group-item">(All)</button></A>
 {% for category in categories %}
-<li><A HREF="?cat={{category.id}}">{{ category.name|e }}</A></li>
+<A HREF="?cat={{category.id}}"><button type="button" class="list-group-item">{{ category.name|e }}</button></A>
 {% endfor %}
+</div>
+</div>
+<div class="col-md-4">
 <h2>Items</h2>
-<a href="/add">Add new item</a>
+<div class="list-group">
+<a href="/add"><button type="button" class="list-group-item">(Add new item)</button></a>
 {% for item in items %}
-<li><A HREF="?item={{item.id}}">{{ item.title|e }}</A></li>
+<A HREF="?item={{item.id}}"><button type="button" class="list-group-item">{{ item.title|e }} ({{item.user.name}})</button></a>
 {% endfor %}
+</div>
+</div>
+<div class="col-md-4">
+{% if item %}
+{% if item_owner %}
+<H2>Edit your own item {{item.title}}</H2>
+<form action="/edit" method="post">
+  <input type="hidden" name="item_id" value="{{item.id}}">
+  Item: <input type="text" name="item_name" value="{{item.title}}">
+  <br />
+  Description: <input type="text" name="description" value="{{item.description}}">
+  <br />
+  Category: <select name="category">
+    <option value="{{item.category.id}}" selected="selected">{{item.category.name}}</option>
+  {% for category in categories %}<option value="{{category.id}}">{{category.name}}</option>{% endfor %}
+</select>
+  <br />
+  <input type="submit" value="Submit">
+</form>
+<form action="/delete" method="post">
+  <input type="hidden" name="item_id" value="{{item.id}}">
+  <input type="submit" value="Delete">
+</form>
+{% else %}
+<H2>{{item.title}} ({{item.category.name}})</H2>
+{{item.description}}
+{% endif %}
+
+{% endif %}
+
+</div>
+</div>
+</div>
