@@ -25,6 +25,13 @@ rm -f /tmp/catalog.db
 ```
 python create_sample_data.py
 ```
+### Update the constants in application.py with your own values
+```
+GITHUB_CLIENT_ID = ''
+GITHUB_CLIENT_SECRET = ''
+OAUTH_REDIRECT_URI = "http://host:port/oauth_callback"
+HOME_URI = "http://host:port/"
+```
 ### Run the application
 ```
 python application.py
