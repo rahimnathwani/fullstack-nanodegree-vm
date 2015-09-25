@@ -15,7 +15,7 @@ git clone https://github.com/rahimnathwani/fullstack-nanodegree-vm
 ### Change to the app directory and install dependencies using pip:
 ```
 cd fullstack-nanodegree-vm/vagrant/catalog
-pip install -r requirements.txt
+sudo pip install -r requirements.txt
 ```
 ### Delete the existing SQlite database if it exists
 ```

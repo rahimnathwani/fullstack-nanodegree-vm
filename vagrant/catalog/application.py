@@ -1,6 +1,6 @@
 from datetime import datetime
-from random import sample, choice
-import string, json
+from random import sample
+import json
 from flask import Flask, render_template, request, redirect, session, url_for
 from flask.ext.sqlalchemy import SQLAlchemy
 from requests.utils import quote
@@ -21,10 +21,9 @@ OAUTH_REDIRECT_URI = "http://localhost:5000/oauth_callback"
 HOME_URI = "http://localhost:5000/"
 
 
-def random_string(length=20):
-    return ''.join(choice(string.ascii_lowercase) for _ in range(length))
-
 class User(db.Model):
+    """This is the User class, which will track users of the app
+    """
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80))
 
@@ -36,6 +35,9 @@ class User(db.Model):
 
 
 class Item(db.Model):
+    """This is the Item class, which will track items.
+    Each item belongs to exactly one User and one Category
+    """
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(80))
     description = db.Column(db.Text)
@@ -59,6 +61,9 @@ class Item(db.Model):
 
 
 class Category(db.Model):
+    """The Category class is for admin use only.
+    Users cannot create or own a Category.
+    """
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50))
 
@@ -70,6 +75,10 @@ class Category(db.Model):
 
 
 def create_sample_data():
+    """This function will create some sample categories, users and titles,
+    and save them to the database.  Not for use in production.
+    :return: None
+    """
     db.create_all()
     for name in ['jim', 'bob', 'james']:
         db.session.add(User(name))
@@ -84,15 +93,24 @@ def create_sample_data():
                             sample(Category.query.all(), 1)[0],
                             sample(User.query.all(), 1)[0]))
         db.session.commit()
-        
+
+
 def logged_in_user():
+    """Check who is logged in.
+    :return: The User object, or None.
+    """
     if 'username' in session:
         return User.query.filter_by(name=session['username']).first()
     else:
         return None
 
+
 @app.route('/')
 def catalog_view():
+    """
+    View to display the three-column catalog page.
+    :return: A Flask view.
+    """
     categories = Category.query.all()
     category_id = request.args.get('cat', '')
     item_id = request.args.get('item', '')
@@ -106,21 +124,28 @@ def catalog_view():
         items = Item.query.order_by(Item.created.desc()).all()
     else:
         category = Category.query.get(category_id)
-        items = Item.query.filter_by(category=category).order_by(Item.created.desc()).all()
+        items = Item.query.filter_by(category=category)\
+            .order_by(Item.created.desc()).all()
 
     return render_template('catalog.html',
                            item=item,
                            item_owner=item_owner,
                            items=items,
                            categories=categories,
-                           username = session['username'] if 'username' in session else 'no one :(')
+                           username=session['username'] if 'username' in
+                                                           session else '')
 
-@app.route('/add', methods=['GET','POST'])
+
+@app.route('/add', methods=['GET', 'POST'])
 def add_item():
+    """
+    Shows the 'add item' form and processes/saves submissions.
+    :return: A Flask view
+    """
     # Only logged-in users can add items
     if logged_in_user() is None:
         return redirect(url_for('login'))
-    # Check if this is a form submission, or whether they are just GETting the blank form
+    # Check if this is a form submission or a GET
     if request.method == 'POST':
         title = request.form['item_name']
         description = request.form['description']
@@ -136,8 +161,13 @@ def add_item():
         return render_template('add_item_form.html',
                                categories=categories)
 
+
 @app.route('/edit', methods=['POST'])
 def edit_item():
+    """
+    Shows the 'edit item' form and processes/saves submissions.
+    :return: Redirects to the home page
+    """
     # Check if the user owns the item
     item = Item.query.get(request.form['item_id'])
     if logged_in_user() != item.user:
@@ -152,6 +182,10 @@ def edit_item():
 
 @app.route('/delete', methods=['POST'])
 def delete_item():
+    """
+    Process DELETE Item requests, after checking ownership.
+    :return: Redirects to the home page
+    """
     # Check if the user owns the item
     item = Item.query.get(request.form['item_id'])
     if logged_in_user() != item.user:
@@ -163,19 +197,31 @@ def delete_item():
 
 @app.route('/login')
 def login():
-    return redirect("https://github.com/login/oauth/authorize?client_id="
-                    + GITHUB_CLIENT_ID
-                    + "&redirect_uri=" + quote(OAUTH_REDIRECT_URI),
-                    code=302)
-                    
+    """
+    Initiate login attempt
+    :return: Redirects to GitHub for login
+    """
+    return redirect("https://github.com/login/oauth/authorize?client_id=" +
+                    GITHUB_CLIENT_ID + "&redirect_uri=" +
+                    quote(OAUTH_REDIRECT_URI), code=302)
+
+
 @app.route('/logout')
 def logout():
+    """
+    Log the user out.
+    :return: Redirect to home page
+    """
     session.pop('username', None)
     return redirect(HOME_URI)
 
 
 @app.route('/oauth_callback')
 def oauth_callback():
+    """
+    Handle the OAuth stuff with GitHub
+    :return: Redirect to the home page
+    """
     # After the user agrees, GitHub should give us a code
     code = request.args.get('code', '')
     if code == '':
@@ -194,39 +240,42 @@ def oauth_callback():
     access_token = json.loads(r.text)['access_token']
 
     # We can use the access token to access the user's GitHub profile.
-    # Get the user's GitHub name.  It is unique and immutable, so we won't bother to get the user's numeric ID.
+    # Get the user's GitHub name.
+    # It is unique and immutable, so we won't bother to get the numeric ID.
     headers = {'Authorization': "token " + access_token}
     r = requests.get("https://api.github.com/user", headers=headers)
     github_login = json.loads(r.text)['login']
 
-    # Check if the user has used our site before, and create an account if she hasn't
+    # Check if the user has used our site before, and create an account if not.
     current_user = User.query.filter_by(name=github_login).first()
     if current_user is None:
         current_user = User(github_login)
         db.session.add(current_user)
         db.session.commit()
-    
+
     # Log in the user by adding/replacing the username in the session cookie
     session.pop('username', None)
     session['username'] = current_user.name
     return redirect(HOME_URI)
 
+
 @app.route('/catalog.json')
 def all_as_json():
+    """
+    Loop through all catalog categories and their items.
+    :return: A JSON representation of all categories/items.
+    """
     stuff_to_return = {}
     categories = Category.query.all()
     for category in categories:
         category_items = {}
         for item in category.items:
             category_items[item.id] = {'name': item.title,
-                                      'description': item.description}
+                                       'description': item.description}
         category_dict = {'category_name': category.name,
                          'items': category_items}
         stuff_to_return[category.id] = category_dict
     return json.dumps(stuff_to_return)
-        
-              
-
 
 
 if __name__ == '__main__':
