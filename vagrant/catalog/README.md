@@ -1,21 +1,29 @@
 # Catalog project
+## Intro
+This is the catalog project from Udacity's Full Stack Web Developer Nanodegree
+
+## Requirements
+* python (2.x)
+* python-pip
 
 ## Getting started
+### Download the repo
+```
+git clone https://github.com/rahimnathwani/fullstack-nanodegree-vm
+```
+
+### Change to the app directory and install dependencies using pip:
+```
+cd fullstack-nanodegree-vm/vagrant/catalog
+pip install -r requirements.txt
+
 ### Delete the existing SQlite database if it exists
 ```
 rm -f /tmp/catalog.db
 ```
-### Install SQLAlchemy
-```
-sudo pip install flask-sqlalchemy
-```
 ### Create sample data
 ```
-cd /vagrant/catalog
-python
-import application
-application.create_sample_data()
-exit()
+python create_sample_data.py
 ```
 ### Run the application
 ```
