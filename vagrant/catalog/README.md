@@ -16,7 +16,7 @@ git clone https://github.com/rahimnathwani/fullstack-nanodegree-vm
 ```
 cd fullstack-nanodegree-vm/vagrant/catalog
 pip install -r requirements.txt
-
+```
 ### Delete the existing SQlite database if it exists
 ```
 rm -f /tmp/catalog.db
